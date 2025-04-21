@@ -47,38 +47,38 @@ def getValidFiles (measurements, quantity, frequency):
 
     #return [[line for line in csv.reader(open(v, mode='r'))] for k, v in z2.group_measurment_files_by_key(pathlib.Path('measurements')).items() if k[1] == quantity and k[2] == frequency]
 
-def randName (args):
+def randName (quantity, frequency, startDate, endDate, measurements, metadata):
     def getName (code):
-        logger.info('Otwarto plik ' + str(args.metadata))
-        for elem in filter(lambda x: x['Kod stacji'] == code, z1.read_metadata(pathlib.Path(args.metadata))):
+        logger.info('Otwarto plik ' + str(metadata))
+        for elem in filter(lambda x: x['Kod stacji'] == code, z1.read_metadata(pathlib.Path(metadata))):
             return (elem['Nazwa stacji'], elem['Adres'])
 
     validCodes = list()
-    for file in getValidFiles(args.measurements, args.quantity, args.frequency):
-        validCodes.extend([k for k, v in getValidCodes(file, args.startDate, args.endDate).items() if v])
+    for file in getValidFiles(measurements, quantity, frequency):
+        validCodes.extend([k for k, v in getValidCodes(file, startDate, endDate).items() if v])
 
     if len(validCodes) == 0:
-        logger.warning('Nie znaleziono pomiarow w przedziale ' + str(args.startDate) + ' ~ ' + str(args.endDate) + '!')
+        logger.warning('Nie znaleziono pomiarow w przedziale ' + str(startDate) + ' ~ ' + str(endDate) + '!')
     else:
         try:
             print(getName(validCodes[random.randint(0, len(validCodes) - 1)]))
-            logger.info('Zamknieto plik ' + str(args.metadata))
+            logger.info('Zamknieto plik ' + str(metadata))
         except OSError:
-            logger.error('Nie znaleziono pliku z metadanymi w lokalizacji ' + str(args.metadata) + '!')
+            logger.error('Nie znaleziono pliku z metadanymi w lokalizacji ' + str(metadata) + '!')
 
-def stats (args):
+def stats (stationName, quantity, frequency, startDate, endDate, measurements, metadata):
     series = list()
-    for file in getValidFiles(args.measurements, args.quantity, args.frequency):
-        validCodes = getValidCodes(file, args.startDate, args.endDate)
-        if args.stationName in validCodes:
-            index = list(validCodes.keys()).index(args.stationName)
+    for file in getValidFiles(measurements, quantity, frequency):
+        validCodes = getValidCodes(file, startDate, endDate)
+        if stationName in validCodes:
+            index = list(validCodes.keys()).index(stationName)
             for line in file[6:]:
                 measurementDate = datetime.datetime.strptime(line[0], '%m/%d/%y %H:%M')
-                if measurementDate <= args.endDate and measurementDate >= args.startDate:
+                if measurementDate <= endDate and measurementDate >= startDate:
                     series.append(float(line[index]))
 
     if len(series) == 0:
-        logger.warning('Nie znaleziono pomiarow dla stacji ' + args.stationName + ' w przedziale ' + str(args.startDate) + ' ~ ' + str(args.endDate) + '!')
+        logger.warning('Nie znaleziono pomiarow dla stacji ' + stationName + ' w przedziale ' + str(startDate) + ' ~ ' + str(endDate) + '!')
     else:
         avg = sum(series) / len(series)
         dev = math.sqrt(sum([((elem - avg) ** 2) for elem in series]) / (len(series) - 1))
