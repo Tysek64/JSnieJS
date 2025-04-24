@@ -7,7 +7,7 @@ import pathlib
 @click.argument('infix', type=str)
 @click.argument('frequency', type=click.Choice(['1g', '24g']))
 @click.argument('year', type=str)
-@click.option('--quantity', '-Q', type=str, default='')
+@click.option('--quantity', '-Q', type=str, default='', help='Measured quantity (when not set it is assumed to be same as infix)')
 @click.option('--measurements', '-M', type=pathlib.Path, default='measurements')
 @click.pass_context
 def main (ctx, station, infix, frequency, year, quantity, measurements):
@@ -15,8 +15,7 @@ def main (ctx, station, infix, frequency, year, quantity, measurements):
     STATION     - Measured stations code\n
     INFIX       - File Infix\n
     FREQUENCY   - Frequency of measurements {1g | 24g}\n
-    YEAR        - Year of measurement\n
-    QUANTITY    - Measured quantity (when not set it is assumed to be same as infix)
+    YEAR        - Year of measurement
     '''
     ctx.ensure_object(dict)
     ctx.obj['STATION'] = station
