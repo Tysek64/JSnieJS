@@ -58,22 +58,29 @@ def read_data(path: Path, header_split=5, delimiter=',',
 
 
 def translate_name(name: str) -> str:
-    dict = {
+    dict_ = {
         'Station': 0,
         'Chemical': 1,
         'Frequency': 2,
-        'Quantity': 3,
         'Position': 4
     }
-    return dict[name]
+    return dict_[name]
 
-def filter_cols(row: list, cols: list) -> list:
-    return [m for i,m in enumerate(row) if i in cols]
+def data_to_human_readable(dict_: dict, metadata: dict, cols: list[int] = None, key: int = 4) -> dict:
+    cols = cols or [v[key] for _, v in metadata.items()]
+    return {col: v for col,(k,v) in zip(cols, dict_.items())}
 
-def select_from(data_: tuple[dict, dict], key: str, condition: callable) -> (dict, list):
+def filter_cols(row: list, cols: list[str]) -> list:
+    return [m for i,m in enumerate(row) if str(i) in cols]
+    # enumerate jest tu sus - zbyt malo elastycznie, ale niech bedzie
+
+def select_from(data_: tuple[dict, dict], key: str,
+                condition_mdata: callable = (lambda _: True), condition_data: callable = (lambda _: True)) -> (dict, dict):
     data, metadata = data_
-    cols = [int(k) for k, v in metadata.items() if condition(v[translate_name(key)])]
-    return {k: filter_cols(v, cols) for k, v in data.items()}, cols
+    cols = [k for k, v in metadata.items() if condition_mdata(v[translate_name(key)])]
+    #print(cols)
+    return ({k: filter_cols(v, cols) for k, v in data.items() if condition_data(v)},
+            {str(i): metadata[c] for i, c in enumerate(cols)})
 
 if __name__ == '__main__':
     # nie w kazdym pliku masz te same wskazniki - 2023 PrekursoryZielonka csv

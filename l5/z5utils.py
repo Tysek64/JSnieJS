@@ -5,7 +5,6 @@ import pathlib
 import random
 import z1
 import z2
-import z5log
 from z5log import get_default_logger
 
 def getValidCodes (csvFile, startDate, endDate):

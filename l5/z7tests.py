@@ -31,7 +31,6 @@ def null_test(data: dict, *args) -> dict:
         rows += 1
 
     test_for_condition(data, nulls, (lambda _, m: m is None), increment_rows)
-
     return {k: round(v/rows, 2) for k,v in nulls.items()}
 
 def delta_test(delta: float) -> callable:
@@ -57,15 +56,19 @@ def delta_test(delta: float) -> callable:
     test_.__name__ = f'delta_test__delta={delta}'
     return test_
 
-def threshold_test(chemical: str, threshold: float) -> callable:
+def threshold_test(chemical: str | None = None,
+                   threshold: float = 0.0) -> callable:
     def test_(data: dict, meta_data, *args) -> dict:
         from z1 import select_from
-        data, cols = select_from((data, meta_data), 'Chemical', (lambda chemical: chemical == 'acetylen'))
+
+        data, cols = select_from((data, meta_data), 'Chemical',
+                                 (lambda chem: chemical is None or chem == chemical))
         import collections
         results = collections.OrderedDict()
-
         test_for_condition(data, results, (lambda _, m: m is not None and m > threshold))
         return {col: v for col, (k, v) in zip(cols, results.items())}
+        # okazuje sie ze automagicznie
+        # python iteruje po kluczach slownika domyslnie
 
     test_.__name__ = f'delta_test__chemical={chemical}_threshold={threshold}'
     return test_
