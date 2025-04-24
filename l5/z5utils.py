@@ -6,8 +6,7 @@ import random
 import z1
 import z2
 import z5log
-
-logger = z5log.logger
+from z5log import get_default_logger
 
 def getValidCodes (csvFile, startDate, endDate):
     try:
@@ -20,7 +19,7 @@ def getValidCodes (csvFile, startDate, endDate):
                     validCodes[code] |= (value != '')
         return validCodes
     except IndexError:
-        logger.error('Nieprawidlowy format pliku z pomiarami!')
+        get_default_logger().error('Nieprawidlowy format pliku z pomiarami!')
         return {}
 
 def getValidFiles (measurements, quantity, frequency):
@@ -30,26 +29,26 @@ def getValidFiles (measurements, quantity, frequency):
             if k[1] == quantity and k[2] == frequency:
                 singleFile = list()
                 file = open(v, mode='r')
-                logger.info('Otwarto plik ' + str(v))
+                get_default_logger().info('Otwarto plik ' + str(v))
                 csvReader = csv.reader(file)
                 for line in csvReader:
                     singleFile.append(line)
-                    logger.debug('Odczytano ' + str(sum([len(x) for x in line])) + ' bajtow z pliku ' + str(v))
+                    get_default_logger().debug('Odczytano ' + str(sum([len(x) for x in line])) + ' bajtow z pliku ' + str(v))
                 result.append(singleFile)
                 file.close()
-                logger.info('Zamknieto plik ' + str(v))
+                get_default_logger().info('Zamknieto plik ' + str(v))
         if len(result) == 0:
             
-            logger.warning('Bledne parametry podane! Nie znaleziono pomiarow dla wielkosci ' + quantity + ' i czestotliwosci ' + frequency + '!')
+            get_default_logger().warning('Bledne parametry podane! Nie znaleziono pomiarow dla wielkosci ' + quantity + ' i czestotliwosci ' + frequency + '!')
     except OSError:
-        logger.error('Nie znaleziono katalogu z pomiarami w lokalizacji ' + str(measurements) + '!')
+        get_default_logger().error('Nie znaleziono katalogu z pomiarami w lokalizacji ' + str(measurements) + '!')
     return result
 
     #return [[line for line in csv.reader(open(v, mode='r'))] for k, v in z2.group_measurment_files_by_key(pathlib.Path('measurements')).items() if k[1] == quantity and k[2] == frequency]
 
 def randName (quantity, frequency, startDate, endDate, measurements, metadata):
     def getName (code):
-        logger.info('Otwarto plik ' + str(metadata))
+        get_default_logger().info('Otwarto plik ' + str(metadata))
         for elem in filter(lambda x: x['Kod stacji'] == code, z1.read_metadata(pathlib.Path(metadata))):
             return (elem['Nazwa stacji'], elem['Adres'])
 
@@ -58,13 +57,13 @@ def randName (quantity, frequency, startDate, endDate, measurements, metadata):
         validCodes.extend([k for k, v in getValidCodes(file, startDate, endDate).items() if v])
 
     if len(validCodes) == 0:
-        logger.warning('Nie znaleziono pomiarow w przedziale ' + str(startDate) + ' ~ ' + str(endDate) + '!')
+        get_default_logger().warning('Nie znaleziono pomiarow w przedziale ' + str(startDate) + ' ~ ' + str(endDate) + '!')
     else:
         try:
             print(getName(validCodes[random.randint(0, len(validCodes) - 1)]))
-            logger.info('Zamknieto plik ' + str(metadata))
+            get_default_logger().info('Zamknieto plik ' + str(metadata))
         except OSError:
-            logger.error('Nie znaleziono pliku z metadanymi w lokalizacji ' + str(metadata) + '!')
+            get_default_logger().error('Nie znaleziono pliku z metadanymi w lokalizacji ' + str(metadata) + '!')
 
 def stats (stationName, quantity, frequency, startDate, endDate, measurements, metadata):
     series = list()
@@ -78,7 +77,7 @@ def stats (stationName, quantity, frequency, startDate, endDate, measurements, m
                     series.append(float(line[index]))
 
     if len(series) == 0:
-        logger.warning('Nie znaleziono pomiarow dla stacji ' + stationName + ' w przedziale ' + str(startDate) + ' ~ ' + str(endDate) + '!')
+        get_default_logger().warning('Nie znaleziono pomiarow dla stacji ' + stationName + ' w przedziale ' + str(startDate) + ' ~ ' + str(endDate) + '!')
     else:
         avg = sum(series) / len(series)
         dev = math.sqrt(sum([((elem - avg) ** 2) for elem in series]) / (len(series) - 1))

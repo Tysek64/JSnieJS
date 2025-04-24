@@ -11,7 +11,8 @@ def statsWrapper (args):
     return z5utils.stats(args.stationName, args.quantity, args.frequency, args.startDate, args.endDate, args.measurements, args.metadata)
 
 if __name__ == '__main__':
-    z5log.configureLogging()
+    from z5log import get_default_logger
+    z5log.configureLogging(get_default_logger())
 
     parser = argparse.ArgumentParser()
 

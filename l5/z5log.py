@@ -9,9 +9,7 @@ class LevelFilter (logging.Filter):
     def filter (self, record):
         return self._low <= record.levelno <= self._high
 
-logger = logging.getLogger(__name__)
-
-def configureLogging ():
+def configureLogging(logger):
     logging.basicConfig(filename='/dev/null', level=logging.DEBUG)
     formatter = logging.Formatter('%(levelname)s\t- %(message)s')
 
@@ -26,3 +24,6 @@ def configureLogging ():
 
     logger.addHandler(stdoutHandler)
     logger.addHandler(stderrHandler)
+
+def get_default_logger(name: str = __name__):
+    return logging.getLogger(name)

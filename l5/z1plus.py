@@ -16,8 +16,8 @@ def main (ctx, quantity, frequency, startdate, enddate, measurements, metadata):
     '''
     QUANTITY    - Measured quantity\n
     FREQUENCY   - Frequency of measurements {1g | 24g}\n
-    STARTDATE   - Measurements\' start date\n
-    ENDDATE     - Measurements\' end date
+    STARTDATE   - Measurements\' start date (format: YYYY-MM-DD)\n
+    ENDDATE     - Measurements\' end date (format: YYYY-MM-DD)
     '''
     ctx.ensure_object(dict)
     ctx.obj['QUANTITY'] = quantity
@@ -42,5 +42,6 @@ def statsWrapper (ctx, stationname):
     return z5utils.stats(stationname, ctx.obj['QUANTITY'], ctx.obj['FREQUENCY'], ctx.obj['STARTDATE'], ctx.obj['ENDDATE'], ctx.obj['MEASUREMENTS'], ctx.obj['METADATA'])
     
 if __name__ == '__main__':
-    z5log.configureLogging()
+    from z5log import get_default_logger
+    z5log.configureLogging(get_default_logger())
     main()

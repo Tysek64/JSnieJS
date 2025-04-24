@@ -26,7 +26,7 @@ class BadDataException(Exception):
 
 # Jezeli ucinasz z headera linie, to musisz to uwzglednic przy splitowaniu na header i data
 def read_data(path: Path, header_split=5, delimiter=',',
-              quotechar: str = '"', skipped_lines=None) -> None | tuple[dict, dict]:
+              quotechar: str = '"', skipped_lines=None) -> tuple[dict, dict]:
 
     import csv
 
@@ -57,11 +57,28 @@ def read_data(path: Path, header_split=5, delimiter=',',
                       "\nWyjatek: \033[91m" + e.__repr__())
 
 
+def translate_name(name: str) -> str:
+    dict = {
+        'Station': 0,
+        'Chemical': 1,
+        'Frequency': 2,
+        'Quantity': 3,
+        'Position': 4
+    }
+    return dict[name]
+
+def filter_cols(row: list, cols: list) -> list:
+    return [m for i,m in enumerate(row) if i in cols]
+
+def select_from(data_: tuple[dict, dict], key: str, condition: callable) -> (dict, list):
+    data, metadata = data_
+    cols = [int(k) for k, v in metadata.items() if condition(v[translate_name(key)])]
+    return {k: filter_cols(v, cols) for k, v in data.items()}, cols
 
 if __name__ == '__main__':
     # nie w kazdym pliku masz te same wskazniki - 2023 PrekursoryZielonka csv
     # czas pomiaru sie zgadza, wiec go usuwam
-    path_d = Path('./measurements/1234_1234_1234.csv')
+    path_d = Path('./measurements/2023_PrekursoryZielonka_1g.csv')
     path_h = Path('./stacje.csv')
     try:
         res_d = read_data(path_d, skipped_lines=[3])
