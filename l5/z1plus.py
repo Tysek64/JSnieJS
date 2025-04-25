@@ -40,6 +40,17 @@ def statsWrapper (ctx, stationname):
     STATIONNAME - Name of station
     '''
     return z5utils.stats(stationname, ctx.obj['QUANTITY'], ctx.obj['FREQUENCY'], ctx.obj['STARTDATE'], ctx.obj['ENDDATE'], ctx.obj['MEASUREMENTS'], ctx.obj['METADATA'])
+
+@main.command('checkAnomalies')
+@click.argument('stationname', type=str)
+@click.option('--measuredquantity', '-Q', type=str, default=None, help='Measured quantity (when not set it is assumed to be same as infix)')
+@click.pass_context
+def anomaliesWrapper (ctx, stationname, measuredquantity):
+    '''
+    STATIONNAME - Measured stations code\n
+    '''
+    from z7 import test_files_by_parameters
+    return test_files_by_parameters(ctx.obj['MEASUREMENTS'], stationname, ctx.obj['QUANTITY'], ctx.obj['FREQUENCY'], ctx.obj['STARTDATE'].year, measuredquantity)
     
 if __name__ == '__main__':
     from z5log import get_default_logger

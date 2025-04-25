@@ -28,7 +28,6 @@ class SelectiveReader(BasicReader):
         from z1 import select_from
         data = select_from(data, 'Station',
                                     condition_mdata=(lambda s: s == self.station))
-
         data = select_from(data, 'Chemical',
                            condition_mdata=(lambda s: s == self.quantity))
         data = select_from(data, 'Frequency',
@@ -67,7 +66,7 @@ def test_files_by_parameters(measurements_path: Path, station: str, infix: str, 
     quantity = quantity if quantity is not None else infix
     from z2 import group_measurment_files_by_key
     files = [v for k, v in group_measurment_files_by_key(measurements_path).items()
-           if year == k[0] and infix == k[1] and frequency == k[2]]
+           if str(year) == k[0] and infix == k[1] and frequency == k[2]]
 
     for file in files:
         reader = SelectiveReader((None, None), station,
@@ -85,6 +84,6 @@ if __name__ == '__main__':
                               '1buten', '1g',
                               test_path, skipped_lines=[], header_split=6))
     '''
-    test_files_by_parameters(Path('measurements'), 'KpZielBoryTu', 'PrekursoryZielonka', '1g',
-                             '2023', '1buten')
+    test_files_by_parameters(Path('measurements'), 'ZpSzczPilsud', 'C6H6', '1g',
+                             '2023', 'C6H6')
 

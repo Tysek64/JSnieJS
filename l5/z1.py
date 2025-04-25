@@ -71,16 +71,15 @@ def data_to_human_readable(dict_: dict, metadata: dict, cols: list[int] = None, 
     return {col: v for col,(k,v) in zip(cols, dict_.items())}
 
 def filter_cols(row: list, cols: list[str]) -> list:
-    return [m for i,m in enumerate(row) if str(i) in cols]
+    return [m for i,m in enumerate(row, start=1) if str(i) in cols]
     # enumerate jest tu sus - zbyt malo elastycznie, ale niech bedzie
 
 def select_from(data_: tuple[dict, dict], key: str,
                 condition_mdata: callable = (lambda _: True), condition_data: callable = (lambda _: True)) -> (dict, dict):
     data, metadata = data_
     cols = [k for k, v in metadata.items() if condition_mdata(v[translate_name(key)])]
-    #print(cols)
     return ({k: filter_cols(v, cols) for k, v in data.items() if condition_data(v)},
-            {str(i): metadata[c] for i, c in enumerate(cols)})
+            {str(i): metadata[c] for i, c in enumerate(cols, start=1)})
 
 if __name__ == '__main__':
     # nie w kazdym pliku masz te same wskazniki - 2023 PrekursoryZielonka csv
