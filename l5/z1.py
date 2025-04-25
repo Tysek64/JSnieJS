@@ -26,7 +26,7 @@ class BadDataException(Exception):
 
 # Jezeli ucinasz z headera linie, to musisz to uwzglednic przy splitowaniu na header i data
 def read_data(path: Path, header_split=5, delimiter=',',
-              quotechar: str = '"', skipped_lines=None) -> None | tuple[dict, dict]:
+              quotechar: str = '"', skipped_lines=None) -> tuple[dict, dict]:
 
     import csv
 
@@ -57,11 +57,35 @@ def read_data(path: Path, header_split=5, delimiter=',',
                       "\nWyjatek: \033[91m" + e.__repr__())
 
 
+def translate_name(name: str) -> str:
+    dict_ = {
+        'Station': 0,
+        'Chemical': 1,
+        'Frequency': 2,
+        'Position': 4
+    }
+    return dict_[name]
+
+def data_to_human_readable(dict_: dict, metadata: dict, cols: list[int] = None, key: int = 4) -> dict:
+    cols = cols or [v[key] for _, v in metadata.items()]
+    return {col: v for col,(k,v) in zip(cols, dict_.items())}
+
+def filter_cols(row: list, cols: list[str]) -> list:
+    return [m for i,m in enumerate(row, start=1) if str(i) in cols]
+    # enumerate jest tu sus - zbyt malo elastycznie, ale niech bedzie
+
+def select_from(data_: tuple[dict, dict], key: str,
+    condition_mdata: callable = (lambda _: True), condition_data: callable = (lambda _: True), condition_key: callable = (lambda _: True)) -> (dict, dict):
+    from datetime import datetime
+    data, metadata = data_
+    cols = [k for k, v in metadata.items() if condition_mdata(v[translate_name(key)])]
+    return ({k: filter_cols(v, cols) for k, v in data.items() if condition_data(v) and condition_key(datetime.strptime(k, '%m/%d/%y %H:%M'))},
+            {str(i): metadata[c] for i, c in enumerate(cols, start=1)})
 
 if __name__ == '__main__':
     # nie w kazdym pliku masz te same wskazniki - 2023 PrekursoryZielonka csv
     # czas pomiaru sie zgadza, wiec go usuwam
-    path_d = Path('./measurements/1234_1234_1234.csv')
+    path_d = Path('./measurements/2023_PrekursoryZielonka_1g.csv')
     path_h = Path('./stacje.csv')
     try:
         res_d = read_data(path_d, skipped_lines=[3])

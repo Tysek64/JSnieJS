@@ -16,8 +16,8 @@ def main (ctx, quantity, frequency, startdate, enddate, measurements, metadata):
     '''
     QUANTITY    - Measured quantity\n
     FREQUENCY   - Frequency of measurements {1g | 24g}\n
-    STARTDATE   - Measurements\' start date\n
-    ENDDATE     - Measurements\' end date
+    STARTDATE   - Measurements\' start date (format: YYYY-MM-DD)\n
+    ENDDATE     - Measurements\' end date (format: YYYY-MM-DD)
     '''
     ctx.ensure_object(dict)
     ctx.obj['QUANTITY'] = quantity
@@ -40,7 +40,21 @@ def statsWrapper (ctx, stationname):
     STATIONNAME - Name of station
     '''
     return z5utils.stats(stationname, ctx.obj['QUANTITY'], ctx.obj['FREQUENCY'], ctx.obj['STARTDATE'], ctx.obj['ENDDATE'], ctx.obj['MEASUREMENTS'], ctx.obj['METADATA'])
+
+@main.command('checkAnomalies')
+@click.argument('stationname', type=str)
+@click.option('--measuredquantity', '-Q', type=str, default=None, help='Measured quantity (when not set it is assumed to be same as infix)')
+@click.option('--delta', '-d', type=float, default=1, help='Difference of measurements considered anomalous')
+@click.option('--threshold', '-t', type=float, default=0.5, help='Threshold of measured values considered anomalous')
+@click.pass_context
+def anomaliesWrapper (ctx, stationname, measuredquantity, delta, threshold):
+    '''
+    STATIONNAME - Measuring station's code
+    '''
+    from z7 import test_files_by_parameters
+    return test_files_by_parameters(ctx.obj['MEASUREMENTS'], stationname, ctx.obj['QUANTITY'], ctx.obj['FREQUENCY'], (ctx.obj['STARTDATE'], ctx.obj['ENDDATE']), measuredquantity, delta, threshold)
     
 if __name__ == '__main__':
-    z5log.configureLogging()
+    from z5log import get_default_logger
+    z5log.configureLogging(get_default_logger())
     main()
