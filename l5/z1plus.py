@@ -44,13 +44,15 @@ def statsWrapper (ctx, stationname):
 @main.command('checkAnomalies')
 @click.argument('stationname', type=str)
 @click.option('--measuredquantity', '-Q', type=str, default=None, help='Measured quantity (when not set it is assumed to be same as infix)')
+@click.option('--delta', '-d', type=float, default=1, help='Difference of measurements considered anomalous')
+@click.option('--threshold', '-t', type=float, default=0.5, help='Threshold of measured values considered anomalous')
 @click.pass_context
-def anomaliesWrapper (ctx, stationname, measuredquantity):
+def anomaliesWrapper (ctx, stationname, measuredquantity, delta, threshold):
     '''
-    STATIONNAME - Measured stations code\n
+    STATIONNAME - Measuring station's code
     '''
     from z7 import test_files_by_parameters
-    return test_files_by_parameters(ctx.obj['MEASUREMENTS'], stationname, ctx.obj['QUANTITY'], ctx.obj['FREQUENCY'], ctx.obj['STARTDATE'].year, measuredquantity)
+    return test_files_by_parameters(ctx.obj['MEASUREMENTS'], stationname, ctx.obj['QUANTITY'], ctx.obj['FREQUENCY'], (ctx.obj['STARTDATE'], ctx.obj['ENDDATE']), measuredquantity, delta, threshold)
     
 if __name__ == '__main__':
     from z5log import get_default_logger

@@ -31,7 +31,7 @@ class SelectiveReader(BasicReader):
         data = select_from(data, 'Chemical',
                            condition_mdata=(lambda s: s == self.quantity))
         data = select_from(data, 'Frequency',
-                           condition_mdata=(lambda f: f == self.frequency))
+                           condition_mdata=(lambda f: f == self.frequency), condition_key=(lambda d: d <= self.date_end and d >= self.date_begin))
         return data
 
 # decorator
@@ -54,22 +54,21 @@ class test_for(object):
 
         return wrapper
 
-@test_for(tests.null_test, tests.delta_test(1),
-          tests.threshold_test(None, 0.5))
-def test_file(data: tuple) -> None:
-    pass
-
 from datetime import date
 from pathlib import Path
 def test_files_by_parameters(measurements_path: Path, station: str, infix: str, frequency: str,
-                             year: str, quantity=None) -> None:
+                             timeframe: tuple, quantity=None, delta=1, threshold=0.5) -> None:
+    @test_for(tests.null_test, tests.delta_test(delta),
+              tests.threshold_test(None, threshold))
+    def test_file(data: tuple) -> None:
+        pass
     quantity = quantity if quantity is not None else infix
     from z2 import group_measurment_files_by_key
     files = [v for k, v in group_measurment_files_by_key(measurements_path).items()
-           if str(year) == k[0] and infix == k[1] and frequency == k[2]]
+           if infix == k[1] and frequency == k[2]]
 
     for file in files:
-        reader = SelectiveReader((None, None), station,
+        reader = SelectiveReader(timeframe, station,
                                  quantity, frequency,
                                  file, skipped_lines=[], header_split=6)
         test_file(reader)

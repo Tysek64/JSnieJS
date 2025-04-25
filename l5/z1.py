@@ -75,10 +75,11 @@ def filter_cols(row: list, cols: list[str]) -> list:
     # enumerate jest tu sus - zbyt malo elastycznie, ale niech bedzie
 
 def select_from(data_: tuple[dict, dict], key: str,
-                condition_mdata: callable = (lambda _: True), condition_data: callable = (lambda _: True)) -> (dict, dict):
+    condition_mdata: callable = (lambda _: True), condition_data: callable = (lambda _: True), condition_key: callable = (lambda _: True)) -> (dict, dict):
+    from datetime import datetime
     data, metadata = data_
     cols = [k for k, v in metadata.items() if condition_mdata(v[translate_name(key)])]
-    return ({k: filter_cols(v, cols) for k, v in data.items() if condition_data(v)},
+    return ({k: filter_cols(v, cols) for k, v in data.items() if condition_data(v) and condition_key(datetime.strptime(k, '%m/%d/%y %H:%M'))},
             {str(i): metadata[c] for i, c in enumerate(cols, start=1)})
 
 if __name__ == '__main__':
