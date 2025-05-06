@@ -1,0 +1,43 @@
+import datetime
+
+class TimeSeries:
+    def __init__(self, name, code, avgTime, unit, dates: list[datetime], values: list[float | None]):
+        self.name = name
+        self.code = code
+        self.avgTime = avgTime
+        self.unit = unit
+        self.dates = dates
+        self.values = values
+
+    def __repr__(self):
+        return '''TimeSeries {
+    name = ''' + self.name + '''
+    code = ''' + self.code + '''
+    avgTime = ''' + self.avgTime + '''
+    unit = ''' + self.unit + '''
+    dates = ''' + str(self.dates) + '''
+    values = ''' + str(self.values) + '''
+}'''
+    def __getitem__(self, key):
+        if isinstance(key, int) or isinstance(key, slice):
+            return (self.dates[key], self.values[key])
+        elif isinstance(key, datetime.date):
+            return [val for date, val in zip(self.dates, self.values) if date == key]
+
+def readCSVtoTS (data):
+    result = list()
+    for station in data[0].values():
+        result.append(TimeSeries(station[1], station[0], station[2], station[3], [], []))
+    for date, measurements in data[1].items():
+        for index, m in enumerate(measurements):
+            result[index].dates.append(datetime.datetime.strptime(date, '%m/%d/%y %H:%M'))
+            result[index].values.append(m)
+
+    return result
+
+if __name__ == '__main__':
+    import l5.z1
+    testList = readCSVtoTS(l5.z1.read_data('short.csv', header_split=6))
+    test = testList[-1]
+    print(test[0:2])
+    print(test[datetime.date(2023, 1, 1)])

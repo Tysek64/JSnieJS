@@ -1,5 +1,5 @@
 class Station:
-    def __init__(self, dictRepr):
+    def __init__ (self, dictRepr):
         self.number = dictRepr.get('Nr', '0')
         self.code = dictRepr.get('Kod stacji', '')
         self.intCode = dictRepr.get('Kod międzynarodowy', '')
@@ -16,14 +16,14 @@ class Station:
         self.latitude = dictRepr.get('WGS84 φ N', '0')
         self.longitude = dictRepr.get('WGS84 λ E', '0')
 
-    def __str__(self):
+    def __str__ (self):
         return '''=== STACJA ''' + self.code + ('' if self.oldCode == '' else ' (ex ' + self.oldCode + ')') + ''' RODZAJU ''' + self.stationKind + ''' ===
 Nazwa:\t\t\t''' + self.name + '''
 Okres dzialania:\t''' + self.startDate + ' ~ ' + self.closeDate + '''
 Adres:\t\t\t''' + self.address + ', ' + self.city + ', wojewodztwo ' + self.voivodeship + '''
 Lokalizacja:\t\t''' + self.latitude + '°N ' + self.longitude + '°E'
 
-    def __repr__(self):
+    def __repr__ (self):
         return '''Station {
     number = ''' + self.number + '''
     code = ''' + self.code + '''
@@ -42,7 +42,7 @@ Lokalizacja:\t\t''' + self.latitude + '°N ' + self.longitude + '°E'
     longitude = ''' + self.longitude + '''
 }'''
 
-    def __eq__(self, o):
+    def __eq__ (self, o):
         return self.code == o.code
 
 import l5.z1
