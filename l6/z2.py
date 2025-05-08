@@ -18,6 +18,18 @@ class TimeSeries:
     dates = {str(self.dates)}
     values = {str(self.values)}
 }}'''
+
+    def __str__(self):
+        return f'''TimeSeries {{
+    name = {self.name}
+    code = {self.code}
+    avgTime = {self.avgTime}
+    unit = {self.unit}
+    dates = {str(len(self.dates))} record(s)
+    values = {str(len(self.values))} record(s)
+}}'''
+
+
     def __getitem__ (self, key):
         if isinstance(key, int) or isinstance(key, slice):
             return (self.dates[key], self.values[key])
@@ -42,14 +54,20 @@ class TimeSeries:
         avg = self.mean
         return None if len(goodValues) == 0 else (math.sqrt(sum([((elem - avg) ** 2) for elem in goodValues]) / (len(goodValues) - 1)))
 
+    def append(self, date, measurement):
+        self.dates.append(date)
+        self.values.append(measurement)
+
+def readMetadata(buffer: list, metadata) -> None:
+    for station in metadata.values():
+        buffer.append(TimeSeries(station[1], station[0], station[2], station[3], [], []))
+
 def readCSVtoTS (data):
     result = list()
-    for station in data[0].values():
-        result.append(TimeSeries(station[1], station[0], station[2], station[3], [], []))
+    readMetadata(result, data[0])
     for date, measurements in data[1].items():
         for index, m in enumerate(measurements):
-            result[index].dates.append(datetime.datetime.strptime(date, '%m/%d/%y %H:%M'))
-            result[index].values.append(m)
+            result[index].append(datetime.datetime.strptime(date, '%m/%d/%y %H:%M'), m)
 
     return result
 
