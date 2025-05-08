@@ -52,7 +52,7 @@ class TimeSeries:
         import math
         goodValues = [val for val in self.values if val is not None]
         avg = self.mean
-        return None if len(goodValues) == 0 else (math.sqrt(sum([((elem - avg) ** 2) for elem in goodValues]) / (len(goodValues) - 1)))
+        return None if len(goodValues) <= 1 else (math.sqrt(sum([((elem - avg) ** 2) for elem in goodValues]) / (len(goodValues) - 1)))
 
     def append(self, date, measurement):
         self.dates.append(date)

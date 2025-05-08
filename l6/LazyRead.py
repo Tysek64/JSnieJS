@@ -1,5 +1,6 @@
 from pathlib import Path
 from l5.z1 import BadDataException, BadHeaderException, parse_dict
+from z2 import TimeSeries
 
 class LazyReader:
     def __init__(self, path: Path, header_split=5, delimiter=',',
@@ -15,6 +16,7 @@ class LazyReader:
         self.skipped_lines = skipped_lines if skipped_lines is not None else []
         self.metadata_read = False
         self.reader = None
+        self.position = 0
 
 
     def open(self) -> None:
@@ -29,40 +31,59 @@ class LazyReader:
     def close(self) -> None:
         self.csvfile.close()
         self.reader = None
+        self.position = 0
 
     def __iter__(self):
-        if self.reader is None:
-            print('file must be opened first')
+        return self.ReaderIterator(self).__iter__()
+
+    class ReaderIterator:
+        def __init__(self, ctx):
+            self.ctx = ctx
+
+        def __iter__(self):
+            if self.ctx.reader is None:
+                print('file must be opened first')
+                return
+
+            import datetime
+            metadata = []
+            data = []
+
+            for row in self.ctx.reader:
+                if not self.ctx.position in self.ctx.skipped_lines and self.ctx.position >= self.ctx.header_split:
+                    try:
+                        date = row[0]
+                        for index, m in enumerate(row[1:]):
+                            data.append((datetime.datetime.strptime(date, '%m/%d/%y %H:%M'),
+                                         float(m) if m != '' else None))
+
+                        yield data
+                        data = []
+                    except ValueError as e:
+                        print(date)
+                        raise ValueError(e, f"Plik: {self.ctx.path}")
+
+                elif self.ctx.position not in self.ctx.skipped_lines and self.ctx.position < self.ctx.header_split - 1:
+                    metadata.append(row)
+                else:
+                    metadata.append(row)
+                    if metadata == [] or len(metadata[0]) < 2:
+                        raise BadHeaderException("\033[91mNiepoprawny naglowek - nie wykryto kolumn")
+
+                    metadata = parse_dict(
+                        {id_: [h_info[int(id_)] for h_info in metadata[1:]] for id_ in metadata[0][1:]}, str)
+
+                    from z2 import readMetadata
+                    series = []
+                    readMetadata(series, metadata)
+                    yield series
+
+                self.ctx.position += 1
+
             return
 
-        import datetime
-        metadata = []
-        data = []
-        for n_row, row in enumerate(self.reader):
-            if not n_row in self.skipped_lines and n_row >= self.header_split:
-                date = row[0]
-                for index, m in enumerate(row[1:]):
-                    data.append((datetime.datetime.strptime(date, '%m/%d/%y %H:%M'), m))
 
-                yield data
-                data = []
 
-            elif not n_row in self.skipped_lines and n_row < self.header_split - 1:
-                metadata.append(row)
-            else:
-                metadata.append(row)
-                if metadata == [] or len(metadata[0]) < 2:
-                    raise BadHeaderException("\033[91mNiepoprawny naglowek - nie wykryto kolumn")
-
-                metadata = parse_dict(
-                    {id_: [h_info[int(id_)] for h_info in metadata[1:]] for id_ in metadata[0][1:]}, str)
-
-                from z2 import readMetadata
-                series = []
-                readMetadata(series, metadata)
-                yield series
-
-        return
 
 class LazyMerger:
     def __init__(self, readers: list[LazyReader]) -> None:
@@ -78,76 +99,106 @@ class LazyMerger:
             r.close()
 
     def __iter__(self):
+        return self.MergeIterator(self).__iter__()
 
-        iters = [i.__iter__() for i in self.readers]
-        self.data = [next(i) for i in iters]
-        lengths = [len(i) for i in self.data]
-        buffers = [None] * len(self.data)
+    class MergeIterator:
+        def __init__(self, ctx):
+            self.ctx = ctx
 
-        def calc_id(id):
-            ctr = 0
-            for l in lengths:
-                if id - l < 0:
-                    return ctr, id
-                else:
-                    id -= l
-                    ctr += 1
+        def __iter__(self):
+            for reader in self.ctx.readers:
+                reader.close()
+                reader.open()
 
-        id_to_series = {id_n: calc_id(id_n) for id_n in range(sum(lengths))}
+            iters = [i.__iter__() for i in self.ctx.readers]
+            self.ctx.data = [next(i) for i in iters]
+            lengths = [len(i) for i in self.ctx.data]
+            buffers = [None] * len(self.ctx.data)
 
-        while True:
-            for id, (iter, buffer) in enumerate(zip(iters, buffers)):
-                if buffer is None:
-                    try:
-                        buffers[id] = next(iter)
-                    except StopIteration:
+            def calc_id(id):
+                ctr = 0
+                for l in lengths:
+                    if id - l < 0:
+                        return ctr, id
+                    else:
+                        id -= l
+                        ctr += 1
+
+            id_to_series = {id_n: calc_id(id_n) for id_n in range(sum(lengths))}
+
+            while True:
+                for id, (iter, buffer) in enumerate(zip(iters, buffers)):
+                    if buffer is None:
+                        try:
+                            buffers[id] = next(iter)
+                        except StopIteration:
+                            buffers[id] = None
+
+                min_ids = []
+                min_date = None
+
+                finished = True
+                for id, buffer in enumerate(buffers):
+                    if buffer is not None:
+                        finished = False
+
+                        if min_date is None or buffer[0][0] < min_date:
+                            min_date = buffer[0][0]
+                            min_ids = [id]
+                        elif buffer[0][0] == min_date:
+                            min_ids.append(id)
+
+                if finished: return
+
+                result = []
+                for id, buffer in enumerate(buffers):
+                    if id in min_ids:
+                        result.extend(buffer)
                         buffers[id] = None
+                    else:
+                        result.extend([(min_date, None)] * lengths[id])
 
-            min_ids = []
-            min_date = None
+                for id, data in enumerate(result):
+                    #print(self.ctx.data[id])
+                    self.ctx.data[id_to_series[id][0]][id_to_series[id][1]].append(data[0], data[1])
+                    #self.ctx.data[id].append(data[0], data[1])
 
-            finished = True
-            for id, buffer in enumerate(buffers):
-                if buffer is not None:
-                    finished = False
+                yield result
 
-                    if min_date is None or buffer[0][0] < min_date:
-                        min_date = buffer[0][0]
-                        min_ids = [id]
-                    elif buffer[0][0] == min_date:
-                        min_ids.append(id)
+    def __len__(self):
+        return len(self.get_series())
 
-            if finished: return
+    def __contains__(self, parameter_name):
+        data_flattened = self.get_series()
+        for series in data_flattened:
+            if series.name == parameter_name:
+                return True
+        return False
 
-            result = []
-            for id, buffer in enumerate(buffers):
-                if id in min_ids:
-                    result.extend(buffer)
-                    buffers[id] = None
-                else:
-                    result.extend([(min_date, '')] * lengths[id])
-
-            for id, data in enumerate(result):
-                #print(self.data[id])
-                self.data[id_to_series[id][0]][id_to_series[id][1]].append(data[0], data[1])
-                #self.data[id].append(data[0], data[1])
-
-            yield result
-
-
-
-
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> TimeSeries:
         if isinstance(key, int) or isinstance(key, slice):
-            data_flattened = [data for data_list in self.data for data in data_list]
+            data_flattened = self.get_series()
             return data_flattened[key]
 
-    def __str__(self):
+    def __str__(self) -> str:
         buff = "LazyMerger status:\n"
         for i in self.data:
             for j in i:
                 buff += str(j) + "\n"
         return buff
+
+    def get_by_param(self, param_name: str) -> list[TimeSeries]:
+        data_flattened = self.get_series()
+        return [series for series in data_flattened if series.name == param_name]
+
+    def get_by_code(self, station_name: str) -> list[TimeSeries]:
+        data_flattened = self.get_series()
+        return [series for series in data_flattened if series.code == station_name]
+
+    def get_series(self) -> list[TimeSeries]:
+        if self.data == [["<data not loaded>"]]:
+            return []
+        return [data for data_list in self.data for data in data_list]
 
 if __name__ == '__main__':
     data_pathl = Path('./measurements/2023_formaldehyd_1g.csv')

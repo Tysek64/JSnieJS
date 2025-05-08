@@ -11,6 +11,9 @@ class OutlierDetector(SeriesValidator):
 
     def analyze(self, series: z2.TimeSeries) -> list[str]:
         avg, dev = series.mean, series.stddev
+        if avg is None or dev is None:
+            return []
+
         return [f'On {date} the measured value exceeded the average of {avg} by over {self.k * dev} and was {val}' for date, val in zip(series.dates, series.values) if val is not None and (abs(val - avg) > self.k * dev)]
 
 class ZeroSpikeDetector(SeriesValidator):
