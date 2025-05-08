@@ -118,6 +118,8 @@ class LazyMerger:
                 reader.open()
 
             iters = [i.__iter__() for i in self.ctx.readers]
+            for i in iters:
+                next(i)
             lengths = [len(i) for i in self.ctx.data]
             buffers = [None] * len(self.ctx.data)
 
