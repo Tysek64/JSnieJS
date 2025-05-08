@@ -10,24 +10,24 @@ class TimeSeries:
         self.values = values
 
     def __repr__ (self):
-        return '''TimeSeries {
-    name = ''' + self.name + '''
-    code = ''' + self.code + '''
-    avgTime = ''' + self.avgTime + '''
-    unit = ''' + self.unit + '''
-    dates = ''' + str(self.dates) + '''
-    values = ''' + str(self.values) + '''
-}'''
+        return f'''TimeSeries {{
+    name = {self.name}
+    code = {self.code}
+    avgTime = {self.avgTime}
+    unit = {self.unit}
+    dates = {str(self.dates)}
+    values = {str(self.values)}
+}}'''
     def __getitem__ (self, key):
         if isinstance(key, int) or isinstance(key, slice):
             return (self.dates[key], self.values[key])
         elif isinstance(key, datetime.datetime):
             if key not in self.dates:
-                raise ValueError('No measurements for datetime ' + str(key))
+                raise ValueError(f'No measurements for datetime {key}')
             return [val for date, val in zip(self.dates, self.values) if date == key]
         elif isinstance(key, datetime.date):
             if key not in [date.date() for date in self.dates]:
-                raise ValueError('No measurements for date ' + str(key))
+                raise ValueError(f'No measurements for date {key}')
             return [val for date, val in zip(self.dates, self.values) if date.date() == key]
 
     @property
@@ -57,6 +57,7 @@ if __name__ == '__main__':
     import l5.z1
     testList = readCSVtoTS(l5.z1.read_data('measurements/2023_C6H6_1g.csv', header_split=6))
     test = testList[-1]
+    print(test)
     print(test[0:2])
     print(test[datetime.date(2023, 1, 1)])
     print(test[datetime.datetime(2023, 1, 1, hour=1, minute=0)])

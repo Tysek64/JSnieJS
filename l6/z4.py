@@ -3,18 +3,18 @@ import z2
 
 class SeriesValidator(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def analyze(self, series: z2.TimeSeries):
+    def analyze(self, series: z2.TimeSeries) -> list[str]:
         pass
 
 class OutlierDetector(SeriesValidator):
     k = 3
-    def analyze(self, series: z2.TimeSeries):
-        avg = series.mean
-        dev = series.stddev
+
+    def analyze(self, series: z2.TimeSeries) -> list[str]:
+        avg, dev = series.mean, series.stddev
         return [f'On {date} the measured value exceeded the average of {avg} by over {self.k * dev} and was {val}' for date, val in zip(series.dates, series.values) if val is not None and (abs(val - avg) > self.k * dev)]
 
 class ZeroSpikeDetector(SeriesValidator):
-    def analyze(self, series: z2.TimeSeries):
+    def analyze(self, series: z2.TimeSeries) -> list[str]:
         zeroStreak = 0
         currentStreak = []
         addStreak = False
@@ -34,16 +34,24 @@ class ZeroSpikeDetector(SeriesValidator):
         return result
 
 class ThresholdDetector(SeriesValidator):
-    def analyze(self, series: z2.TimeSeries, threshold: float):
-        return [f'On {date} the measured value exceeded the threshold of {threshold} and was {val}' for date, val in zip(series.dates, series.values) if val is not None and (val > threshold)]
+    def __init__(self, threshold = 6):
+        self.threshold = threshold
+
+    def analyze(self, series: z2.TimeSeries) -> list[str]:
+        return [f'On {date} the measured value exceeded the threshold of {self.threshold} and was {val}' for date, val in zip(series.dates, series.values) if val is not None and (val > self.threshold)]
+
+class CompositeValidator(SeriesValidator):
+    def __init__(self, validator1: SeriesValidator, validator2: SeriesValidator):
+        self.val1 = validator1
+        self.val2 = validator2
+
+    def analyze(self, series: z2.TimeSeries) -> list[str]:
+        return self.val1.analyze(series) + self.val2.analyze(series)
 
 if __name__ == '__main__':
     import l5.z1
     testList = z2.readCSVtoTS(l5.z1.read_data('measurements/2023_C6H6_1g.csv', header_split=6))
     test = testList[-1]
-    for message in OutlierDetector().analyze(test):
-        print(message)
-    for message in ZeroSpikeDetector().analyze(test):
-        print(message)
-    for message in ThresholdDetector().analyze(test, 6):
+    OutlierDetector.k = 5
+    for message in CompositeValidator(OutlierDetector(), CompositeValidator(ZeroSpikeDetector(), ThresholdDetector(10))).analyze(test):
         print(message)
