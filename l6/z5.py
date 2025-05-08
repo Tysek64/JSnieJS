@@ -6,7 +6,7 @@ class Measurements:
     from z4 import SeriesValidator
     def __init__(self, data_path: Path):
         files = list(data_path.glob('*.csv'))
-        readers = list(map(lambda f: LazyReader(f, header_split=6), files))
+        readers = [LazyReader(f, header_split=6) for f in files]
         self.merger = LazyMerger(readers)
         self.merger.open()
 
@@ -15,6 +15,9 @@ class Measurements:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.merger.close()
+
+    def __len__(self):
+        return len(self.merger)
 
     def get_by_parameter(self, param_name: str) -> list[TimeSeries]:
         return self.merger.get_by_param(param_name)
@@ -34,14 +37,16 @@ class Measurements:
 if __name__ == '__main__':
     data_path = Path('./measurements/l5Tests')
     m = Measurements(data_path)
-    #print(m)
+    print(len(m))
+    '''
     for _, _ in zip(range(1000), m.merger):
         pass
+        '''
 
     print(m.merger)
-    #print(m.__contains__('BaA(PM10)'))
-    #print(m.get_by_parameter('Hg(TGM)'))
-    #print(m.get_by_station('WmPuszczaBor'))
+    print(m.__contains__('BaA(PM10)'))
+    print(m.get_by_parameter('Hg(TGM)'))
+    print(m.get_by_station('WmPuszczaBor'))
     import z4, z8
     validators = [z4.OutlierDetector(), z4.ThresholdDetector(), z4.ZeroSpikeDetector(), z8.SimpleReporter()]
     for k, v in m.detect_all_anomalies(validators, preload=False).items():

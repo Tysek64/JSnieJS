@@ -88,7 +88,7 @@ class LazyReader:
 class LazyMerger:
     def __init__(self, readers: list[LazyReader]) -> None:
         self.readers = readers
-        self.data = [["<data not loaded>"]]
+        self.prefetch_metadata()
 
     def open(self):
         for r in self.readers:
@@ -97,6 +97,13 @@ class LazyMerger:
     def close(self):
         for r in self.readers:
             r.close()
+
+    def prefetch_metadata(self):
+        for reader in self.readers:
+            reader.open()
+        self.data = [next(i.__iter__()) for i in self.readers]
+        for reader in self.readers:
+            reader.close()
 
     def __iter__(self):
         return self.MergeIterator(self).__iter__()
@@ -111,7 +118,6 @@ class LazyMerger:
                 reader.open()
 
             iters = [i.__iter__() for i in self.ctx.readers]
-            self.ctx.data = [next(i) for i in iters]
             lengths = [len(i) for i in self.ctx.data]
             buffers = [None] * len(self.ctx.data)
 
@@ -196,8 +202,6 @@ class LazyMerger:
         return [series for series in data_flattened if series.code == station_name]
 
     def get_series(self) -> list[TimeSeries]:
-        if self.data == [["<data not loaded>"]]:
-            return []
         return [data for data_list in self.data for data in data_list]
 
 if __name__ == '__main__':
