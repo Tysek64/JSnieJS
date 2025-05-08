@@ -44,7 +44,7 @@ if __name__ == '__main__':
         '''
 
     print(m.merger)
-    print(m.__contains__('BaA(PM10)'))
+    print('BaA(PM10)' in m)
     print(m.get_by_parameter('Hg(TGM)'))
     print(m.get_by_station('WmPuszczaBor'))
     import z4, z8
