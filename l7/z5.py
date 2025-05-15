@@ -10,9 +10,16 @@ def make_generator_mem(f: callable) -> Generator[any, None, None]:
     def wrapper_(*args, **kwargs):
         return f_(*args, **kwargs)
 
-    print(f_.__globals__[f_.__name__])
-    f_.__globals__[f_.__name__] = wrapper_
+    bind_name = f'{f.__name__}_wrapper'
+    f_.__globals__[bind_name] = wrapper_
+
+    co_names = list(f.__code__.co_names)
+    co_names[co_names.index(f.__name__)] = bind_name
+    co_names = tuple(co_names)
+
+    f.__code__ = f.__code__.replace(co_names=co_names)
     #print(f_.__globals__[f_.__name__])
+    #print('fv', __test.__code__.co_freevars, __test.__closure__.cell_contents)
     return make_generator(wrapper_)
 
 
@@ -22,10 +29,11 @@ def make_generator_mem(f: callable) -> Generator[any, None, None]:
 # rec 9s
 def main() -> None:
     mem_gen = make_generator_mem(fibonacci_rec)
-    print(type(fibonacci_rec))
-    for i, fib in zip(range(500), mem_gen):
-        pass
-    print(fibonacci_iter.__globals__['fibonacci_rec'])
+    #print(type(fibonacci_rec))
+    for i, fib in zip(range(5000), mem_gen):
+        print(f'{i}: {fib}')
+    #print(fibonacci_iter.__globals__['fibonacci_rec'])
+    #print(make_generator_mem.__closure__.)
 
 if __name__ == '__main__':
     main()

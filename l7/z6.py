@@ -2,6 +2,9 @@ import logging
 
 def log(level, logger):
     def wrapper1(func):
+        from functools import wraps
+
+        @wraps(func)
         def wrapper2(*args, **kwargs):
             import time
             import datetime
@@ -19,7 +22,5 @@ def log(level, logger):
                 logger.log(level, f'Zakonczono \'{func.__name__}\' po {(1000 * (time.perf_counter() - startTime)):.3f}ms i otrzymano wartosc: {retVal}')
 
             return retVal
-        wrapper2.__name__ = func.__name__
-        wrapper2.__doc__ = func.__doc__
         return wrapper2
     return wrapper1
