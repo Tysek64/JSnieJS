@@ -32,6 +32,7 @@ class testCls:
     def __init__(self):
         pass
 
+    @log(logging.INFO, get_default_logger())
     def testMethod(self, arg):
         return None
 
