@@ -12,7 +12,7 @@ def make_generator_mem(f: callable) -> Generator[any, None, None]:
 
     print(f_.__globals__[f_.__name__])
     f_.__globals__[f_.__name__] = wrapper_
-    print(f_.__globals__[f_.__name__])
+    #print(f_.__globals__[f_.__name__])
     return make_generator(wrapper_)
 
 
