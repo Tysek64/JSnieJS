@@ -5,9 +5,7 @@ def median(numbers):
     return sorted(numbers)[len(numbers) // 2] if len(numbers) % 2 else sum(sorted(numbers)[len(numbers) // 2 - 1:len(numbers) // 2 + 1]) / 2
 
 def pierwiastek(base, epsilon=0.1):
-    def step(prev):
-        this = prev - ((prev ** 2 - base) / (2 * prev))
-        return this if abs(this ** 2 - base) <= epsilon else step(this)
+    def step(prev): this = prev - ((prev ** 2 - base) / (2 * prev)); return this if abs(this ** 2 - base) <= epsilon else step(this)
     return step(1)
 
 def make_alpha_dict(text):

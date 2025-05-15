@@ -1,17 +1,14 @@
+def atleast(pred, iterable, n):
+    for elem in iterable:
+        n -= pred(elem)
+        if n <= 0: return True
+    return False
+
 def forall(pred, iterable):
     return not atleast(lambda x: not pred(x), iterable, 1)
 
 def exists(pred, iterable):
     return atleast(pred, iterable, 1)
-
-def atleast(pred, iterable, n):
-    sum = 0
-    for elem in iterable:
-        if pred(elem):
-            sum += 1
-        if sum >= n:
-            return True
-    return False
 
 def atmost(pred, iterable, n):
     return not atleast(pred, iterable, n + 1)
@@ -35,4 +32,4 @@ if __name__ == '__main__':
     print(exists(lambda x: x % 2 == 0, itertools.count(1)))
     print(atmost(lambda x: x % 2 == 0, itertools.count(1), 5))
     print(atleast(lambda x: x % 2 == 0, itertools.count(1), 5))
-    print(forall(lambda x: x % 2 == 0, itertools.count(2, 2)))
+    #print(forall(lambda x: x % 2 == 0, itertools.count(2, 2)))
