@@ -14,7 +14,10 @@ def make_generator_mem(f: callable) -> Generator[any, None, None]:
     f_.__globals__[bind_name] = wrapper_
 
     co_names = list(f.__code__.co_names)
-    co_names[co_names.index(f.__name__)] = bind_name
+    try:
+        co_names[co_names.index(f.__name__)] = bind_name
+    except:
+        pass
     co_names = tuple(co_names)
 
     f.__code__ = f.__code__.replace(co_names=co_names)
