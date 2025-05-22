@@ -13,25 +13,40 @@ class LogReader:
         (14, lambda x: 0 if x == '-' else int(x), 'code')
     ]
 
-    def __init__(self, path):
+    def __init__(self, path, filters = None):
         self.path = path
         self.fullLogs = []
+        self.filters = [] if filters is None else filters
 
     def readMasterList(self):
         result = []
         self.fullLogs = []
+        success = False
         with open(self.path, mode='r') as file:
             for i, line in enumerate(file, start=1):
-                parsedLine = self.parseRecord(line)
+                while not success:
+                    success = True
+                    parsedLine = self.parseRecord(line)
+                    for f in self.filters:
+                        if not f(parsedLine):
+                            success = False
                 result.append(('; '.join([str(elem) for elem in parsedLine]))[:100] + '...')
                 self.fullLogs.append(parsedLine)
         return result
 
     def readMasterRecord(self):
         self.fullLogs = []
+        success = False
         with open(self.path, mode='r') as file:
             for i, line in enumerate(file, start=1):
-                parsedLine = self.parseRecord(line)
+
+                while not success:
+                    success = True
+                    parsedLine = self.parseRecord(line)
+                    for f in self.filters:
+                        if not f(parsedLine):
+                            success = False
+
                 self.fullLogs.append(parsedLine)
                 yield ('; '.join([str(elem) for elem in parsedLine]))[:100] + '...'
         return
@@ -45,6 +60,10 @@ class LogReader:
 
     def parseRecord(self, record):
         return tuple([fun(record.strip().split('\t')[index]) for index, fun, _ in self.parseInfo])
+
+    @staticmethod
+    def getDetail(record):
+        return {k: v for (_, _, k), v in zip(LogReader.parseInfo, record)}
 
 if __name__ == '__main__':
     import sys

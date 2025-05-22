@@ -37,6 +37,16 @@ def main() -> None:
     for pwd in pg:
         print(pwd)
 
+    pg = PasswordGenerator(10, 4)
+    except_thrown = False
+    while not except_thrown:
+        try:
+            pwd = next(pg)
+            print(pwd)
+        except StopIteration:
+            except_thrown = True
+
+
 if __name__ == '__main__':
     main()
 

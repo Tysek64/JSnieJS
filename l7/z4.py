@@ -28,7 +28,7 @@ def main() -> None:
     geometric = lambda n: 0.5 ** n
 
     print("FIBONACCI")
-    generator = make_generator(fibonacci_iter)
+    generator = make_generator(fibonacci_rec)
     for i, fib in zip(range(10), generator):
         print(i, ': ', fib)
 
