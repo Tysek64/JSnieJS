@@ -1,4 +1,4 @@
-from PySide6.QtCore import QDate
+from PySide6.QtCore import QDateTime
 
 from LogReader import LogReader
 
@@ -14,6 +14,6 @@ class DateFilter(BaseFilter):
 
     def __call__(self, line):
         record = LogReader.getDetail(line)
-        if self.begin_date <= QDate(record['timestamp']) <= self.end_date:
+        if self.begin_date <= QDateTime(record['timestamp']) <= self.end_date:
             return True
         return False

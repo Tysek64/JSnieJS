@@ -23,12 +23,12 @@ class LogReader:
         self.fullLogs = []
         with open(self.path, mode='r') as file:
             for i, line in enumerate(file, start=1):
+                success = True
                 parsedLine = self.parseRecord(line)
-
                 for f in self.filters:
                     if not f(parsedLine):
-                        break
-                else:
+                        success = False
+                if success:
                     result.append(('; '.join([str(elem) for elem in parsedLine]))[:100] + '...')
                     self.fullLogs.append(parsedLine)
         return result
@@ -37,12 +37,13 @@ class LogReader:
         self.fullLogs = []
         with open(self.path, mode='r') as file:
             for i, line in enumerate(file, start=1):
-
+                success = True
                 parsedLine = self.parseRecord(line)
                 for f in self.filters:
                     if not f(parsedLine):
-                        break
-                else:
+                        success = False
+
+                if success:
                     self.fullLogs.append(parsedLine)
                     yield ('; '.join([str(elem) for elem in parsedLine]))[:100] + '...'
         return
@@ -63,4 +64,5 @@ class LogReader:
 
 if __name__ == '__main__':
     import sys
-    LogReader(sys.argv[1]).readMasterList()
+    for elem in LogReader(sys.argv[1]).readMasterList():
+        print(elem)

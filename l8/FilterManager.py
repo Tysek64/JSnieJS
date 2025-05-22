@@ -15,7 +15,7 @@ class FilterManager:
         self.filters = []
 
         # Date filtering
-        b_date, e_date = self.ctx.contents.dateFrom.date(), self.ctx.contents.dateTo.date()
+        b_date, e_date = self.ctx.contents.dateFrom.dateTime(), self.ctx.contents.dateTo.dateTime()
         if b_date <= e_date:
             self.filters.append(Filters.DateFilter(b_date, e_date))
         else:
