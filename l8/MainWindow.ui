@@ -101,7 +101,7 @@
            <iconset theme="QIcon::ThemeIcon::EditFind"/>
           </property>
           <property name="shortcut">
-           <string>Ctrl+A</string>
+           <string>Ctrl+F</string>
           </property>
          </widget>
         </item>

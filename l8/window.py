@@ -287,7 +287,7 @@ class Ui_MainWindow(object):
         self.dateTo.setDisplayFormat(QCoreApplication.translate("MainWindow", u"yyyy/MM/dd hh:mm:ss.zzz", None))
         self.applyDateFilter.setText(QCoreApplication.translate("MainWindow", u"Apply filter", None))
 #if QT_CONFIG(shortcut)
-        self.applyDateFilter.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+A", None))
+        self.applyDateFilter.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+F", None))
 #endif // QT_CONFIG(shortcut)
         self.localHostLabel.setText(QCoreApplication.translate("MainWindow", u"Local IP address", None))
         self.remoteHostLabel.setText(QCoreApplication.translate("MainWindow", u"Remote IP address", None))

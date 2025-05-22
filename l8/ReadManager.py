@@ -18,6 +18,7 @@ class ReadManager:
         try:
             self.reader = LogReader.LogReader(self.ctx.contents.filenameInput.text(), self.ctx.filterMan.filters)
             totalLines = str(self.reader.getTotalRecords())
+            self.ctx.contents.masterList.selectionModel().reset()
             self.ctx.contents.masterList.clear()
             self.loaderThread = DataLoader(self, self.ctx.filterMan)
             self.loaderThread.statusSignal.connect(updateStatusBar)
