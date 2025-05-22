@@ -21,34 +21,30 @@ class LogReader:
     def readMasterList(self):
         result = []
         self.fullLogs = []
-        success = False
         with open(self.path, mode='r') as file:
             for i, line in enumerate(file, start=1):
-                while not success:
-                    success = True
-                    parsedLine = self.parseRecord(line)
-                    for f in self.filters:
-                        if not f(parsedLine):
-                            success = False
-                result.append(('; '.join([str(elem) for elem in parsedLine]))[:100] + '...')
-                self.fullLogs.append(parsedLine)
+                parsedLine = self.parseRecord(line)
+
+                for f in self.filters:
+                    if not f(parsedLine):
+                        break
+                else:
+                    result.append(('; '.join([str(elem) for elem in parsedLine]))[:100] + '...')
+                    self.fullLogs.append(parsedLine)
         return result
 
     def readMasterRecord(self):
         self.fullLogs = []
-        success = False
         with open(self.path, mode='r') as file:
             for i, line in enumerate(file, start=1):
 
-                while not success:
-                    success = True
-                    parsedLine = self.parseRecord(line)
-                    for f in self.filters:
-                        if not f(parsedLine):
-                            success = False
-
-                self.fullLogs.append(parsedLine)
-                yield ('; '.join([str(elem) for elem in parsedLine]))[:100] + '...'
+                parsedLine = self.parseRecord(line)
+                for f in self.filters:
+                    if not f(parsedLine):
+                        break
+                else:
+                    self.fullLogs.append(parsedLine)
+                    yield ('; '.join([str(elem) for elem in parsedLine]))[:100] + '...'
         return
 
     def getTotalRecords(self):
