@@ -49,6 +49,7 @@ if __name__ == '__main__':
     print(m.get_by_station('WmPuszczaBor'))
             '''
     import Validators, SimpleReporter
+    # tutaj musi wystepowac blad!
     validators: list[Validators.SeriesValidator] = [Validators.CompositeValidator(Validators.CompositeValidator(Validators.OutlierDetector(), Validators.ThresholdDetector()), Validators.CompositeValidator(Validators.ZeroSpikeDetector(), SimpleReporter.SimpleReporter()))]
     for k, v in m.detect_all_anomalies(validators, preload=False).items():
         print(k, ": ", v)

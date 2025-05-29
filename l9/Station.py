@@ -47,10 +47,11 @@ Lokalizacja:\t\t{self.latitude}°N {self.longitude}°E'''
 
 import l5.z1
 if __name__ == '__main__':
-    for stat in l5.z1.read_metadata('stacje.csv'):
+    from pathlib import Path
+    for stat in l5.z1.read_metadata(Path('stacje.csv')):
         print(Station(stat))
     test1: Station = Station({'Kod stacji': 'stacja', 'Nazwa stacji': 'Stacja testowa 1'})
     test2: Station = Station({'Kod stacji': 'stacja', 'Nazwa stacji': 'Stacja testowa 2'})
     print('', test1, test2, test1 == test2, sep='\n\n')
 
-test: Station = Station(l5.z1.read_metadata('stacje.csv')[0])
+    test: Station = Station(l5.z1.read_metadata(Path('stacje.csv'))[0])

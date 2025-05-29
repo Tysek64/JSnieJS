@@ -24,9 +24,10 @@ class BadDataException(Exception):
     def __init__(self, message):
         super().__init__(message)
 
+from typing import Optional
 # Jezeli ucinasz z headera linie, to musisz to uwzglednic przy splitowaniu na header i data
-def read_data(path: Path, header_split=5, delimiter=',',
-              quotechar: str = '"', skipped_lines=None) -> tuple[dict, dict]:
+def read_data(path: Path, header_split: int = 5, delimiter: str = ',',
+              quotechar: str = '"', skipped_lines: Optional[list[int]]=None) -> tuple[dict, dict]:
 
     import csv
 
@@ -37,10 +38,13 @@ def read_data(path: Path, header_split=5, delimiter=',',
 
     try:
         with open(path, newline='\n') as csvfile:
-            reader = csv.reader(csvfile, delimiter=delimiter, quotechar=quotechar)
-            lines = filter(lambda e:  True if e[0] not in skipped_lines_ else False,
-                           enumerate([line for line in reader]))
-            lines = list(map(lambda e: e[1], lines))
+            reader: csv.reader = csv.reader(csvfile, delimiter=delimiter, quotechar=quotechar)
+            #lines_ = filter(lambda e:  True if e[0] not in skipped_lines_ else False,
+            #               enumerate([line for line in reader])) mypy jest glupie
+
+            lines_ = [e[1] for e in enumerate([line for line in reader]) if e[0] not in skipped_lines_]
+
+            lines = list(map(lambda e: e[1], lines_))
             header, data = lines[:header_split], lines[header_split:]
 
             if header == [] or len(header[0]) < 2:
@@ -57,7 +61,7 @@ def read_data(path: Path, header_split=5, delimiter=',',
                       "\nWyjatek: \033[91m" + e.__repr__())
 
 
-def translate_name(name: str) -> str:
+def translate_name(name: str) -> int:
     dict_ = {
         'Station': 0,
         'Chemical': 1,
@@ -66,7 +70,8 @@ def translate_name(name: str) -> str:
     }
     return dict_[name]
 
-def data_to_human_readable(dict_: dict, metadata: dict, cols: list[int] = None, key: int = 4) -> dict:
+from typing import Optional
+def data_to_human_readable(dict_: dict, metadata: dict, cols: Optional[list[int]] = None, key: int = 4) -> dict:
     cols = cols or [v[key] for _, v in metadata.items()]
     return {col: v for col,(k,v) in zip(cols, dict_.items())}
 
@@ -74,8 +79,10 @@ def filter_cols(row: list, cols: list[str]) -> list:
     return [m for i,m in enumerate(row, start=1) if str(i) in cols]
     # enumerate jest tu sus - zbyt malo elastycznie, ale niech bedzie
 
+
+from typing import Callable
 def select_from(data_: tuple[dict, dict], key: str,
-    condition_mdata: callable = (lambda _: True), condition_data: callable = (lambda _: True), condition_key: callable = (lambda _: True)) -> (dict, dict):
+    condition_mdata: Callable = (lambda _: True), condition_data: Callable = (lambda _: True), condition_key: Callable = (lambda _: True)) -> (dict, dict):
     from datetime import datetime
     data, metadata = data_
     cols = [k for k, v in metadata.items() if condition_mdata(v[translate_name(key)])]

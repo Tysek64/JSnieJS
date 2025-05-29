@@ -1,8 +1,11 @@
+import csv
 from pathlib import Path
 from l5.z1 import BadDataException, BadHeaderException, parse_dict
 from TimeSeries import TimeSeries
+from typing import Optional, Any
 
 class LazyReader:
+
     def __init__(self, path: Path, header_split=5, delimiter=',',
               quotechar: str = '"', skipped_lines=None) -> None:
 
@@ -15,7 +18,7 @@ class LazyReader:
         self.quotechar = quotechar
         self.skipped_lines = skipped_lines if skipped_lines is not None else []
         self.metadata_read = False
-        self.reader = None
+        self.reader: Optional[Any] = None # real signature csv.reader unknown
         self.position = 0
 
 
@@ -183,10 +186,11 @@ class LazyMerger:
                 return True
         return False
 
-    def __getitem__(self, key) -> TimeSeries:
+    def __getitem__(self, key) -> TimeSeries | list[TimeSeries]:
         if isinstance(key, int) or isinstance(key, slice):
             data_flattened = self.get_series()
             return data_flattened[key]
+        raise TypeError('Index must be an integer')
 
     def __str__(self) -> str:
         buff = "LazyMerger status:\n"

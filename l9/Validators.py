@@ -56,7 +56,8 @@ class CompositeValidator(SeriesValidator):
 
 if __name__ == '__main__':
     import l5.z1
-    testList: list[TimeSeries] = readCSVtoTS(l5.z1.read_data('measurements/2023_C6H6_1g.csv', header_split=6))
+    from pathlib import Path
+    testList: list[TimeSeries] = readCSVtoTS(l5.z1.read_data(Path('measurements/2023_C6H6_1g.csv'), header_split=6))
     test: TimeSeries = testList[-1]
     OutlierDetector.k = 5
     for message in CompositeValidator(OutlierDetector(), CompositeValidator(ZeroSpikeDetector(), ThresholdDetector(10))).analyze(test):

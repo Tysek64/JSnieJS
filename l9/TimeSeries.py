@@ -30,17 +30,21 @@ class TimeSeries:
 }}'''
 
 
-    def __getitem__ (self, key: int | slice) -> tuple[list[datetime.datetime], list[float | None]] | list[float | None]:
+    def __getitem__ (self, key: int | slice | datetime.date | datetime.datetime) \
+            -> (tuple[datetime.datetime | list[datetime.datetime], float | list[float | None] | None]
+                                                 | tuple[list[datetime.datetime], list[float | None]]
+                                                 | list[float | None]):
         if isinstance(key, int) or isinstance(key, slice):
-            return (self.dates[key], self.values[key])
+            return self.dates[key], self.values[key]
         elif isinstance(key, datetime.datetime):
             if key not in self.dates:
-                raise ValueError(f'No measurements for datetime {key}')
+                raise KeyError(f'No measurements for datetime {key}')
             return [val for date, val in zip(self.dates, self.values) if date == key]
         elif isinstance(key, datetime.date):
             if key not in [date.date() for date in self.dates]:
-                raise ValueError(f'No measurements for date {key}')
+                raise KeyError(f'No measurements for date {key}')
             return [val for date, val in zip(self.dates, self.values) if date.date() == key]
+        raise TypeError(f'TimeSeries indices must be integers, slices, date or datetimes, not {type(key)}')
 
     @property
     def mean (self) -> None | float:
@@ -51,18 +55,20 @@ class TimeSeries:
     def stddev (self) -> None | float:
         import math
         goodValues: list[float] = [val for val in self.values if val is not None]
-        avg: float = self.mean
-        return None if len(goodValues) <= 1 else (math.sqrt(sum([((elem - avg) ** 2) for elem in goodValues]) / (len(goodValues) - 1)))
+        avg: float | None = self.mean
+        if avg is None:
+            return None
+        return None if len(goodValues) <= 1 else (math.sqrt(sum([((elem - avg) ** 2) for elem in goodValues]) / len(goodValues)))
 
     def append(self, date: datetime.datetime, measurement: None | float):
         self.dates.append(date)
         self.values.append(measurement)
 
-def readMetadata(buffer: list, metadata: list) -> None:
+def readMetadata(buffer: list, metadata: dict) -> None:
     for station in metadata.values():
         buffer.append(TimeSeries(station[1], station[0], station[2], station[3], [], []))
 
-def readCSVtoTS (data: list) -> TimeSeries:
+def readCSVtoTS (data: tuple) -> list[TimeSeries]:
     result: list = list()
     readMetadata(result, data[0])
     for date, measurements in data[1].items():
@@ -71,12 +77,14 @@ def readCSVtoTS (data: list) -> TimeSeries:
 
     return result
 
+def read_to_ts(path: str) -> list[TimeSeries]:
+    from l5.z1 import read_data
+    from pathlib import Path
+    return readCSVtoTS(read_data(Path(path), header_split=6))
+
 if __name__ == '__main__':
-    import l5.z1
-    testList: list[TimeSeries] = readCSVtoTS(l5.z1.read_data('measurements/2023_C6H6_1g.csv', header_split=6))
+    testList: list[TimeSeries] = read_to_ts('measurements/l9Tests/2023_C6H6_1g2.csv')
     test: TimeSeries = testList[-1]
-    print(test)
-    print(test[0:2])
     print(test[datetime.date(2023, 1, 1)])
     print(test[datetime.datetime(2023, 1, 1, hour=1, minute=0)])
     try:
