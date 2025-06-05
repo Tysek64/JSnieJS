@@ -5,12 +5,15 @@ import peewee
 
 def parse_csv(filename):
     conversions = [int, int, lambda d: datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S'), lambda d: datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S'), str, str, int]
-    with open(filename, mode='r') as file:
+    with open(filename, mode='r', encoding='utf8') as file: # bez encodingu mi nie dziala
         csvReader = csv.DictReader(file)
         return [{k: conv(v) for (k, v), conv in zip(line.items(), conversions)} for line in csvReader]
 
 # stations - slownik {nazwa stacji: id stacji} stacji, ktore juz sa w bazie
-def parse_stations(rawData, stations={}):
+def parse_stations(rawData, stations=None):
+    if stations is None:
+        stations = {}
+
     result = []
     UID = 0 if len(stations.values()) == 0 else max(stations.values()) + 1
     for line in rawData:
@@ -28,7 +31,13 @@ def parse_stations(rawData, stations={}):
 
 # stations - slownik {nazwa stacji: id stacji} stacji, ktore juz sa w bazie
 # rentals  - lista id wypozyczen, ktore juz sa w bazie
-def parse_rentals(rawData, stations={}, rentals=[]):
+def parse_rentals(rawData, stations=None, rentals=None):
+
+    if stations is None:
+        stations = {}
+    if rentals is None:
+        rentals = {}
+
     result = []
     nameTranslation = {
         'UID wynajmu': 'rentalID',
@@ -63,6 +72,17 @@ def parse_rentals(rawData, stations={}, rentals=[]):
         if parsedLine['rentalID'] not in rentals:
             result.append(parsedLine)
     return result
+
+def parse_stations_sqlite(stations: dict) -> list:
+    return [(v, k) for k, v in stations.items()]
+
+def parse_rentals_sqlite(rentals: dict) -> list:
+    for i, row in enumerate(rentals):
+        rentals[i]['startTime'] = row['startTime'].timestamp()
+        rentals[i]['endTime'] = row['endTime'].timestamp()
+
+    return [tuple(v for v in row.values()) for row in rentals]
+
 
 if __name__ == '__main__':
     parsedCsv1 = parse_csv('dane/historia_przejazdow_2021-01.csv')
