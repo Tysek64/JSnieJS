@@ -1,15 +1,15 @@
 clear
 echo Removing database file...
-rm rentals.db
+rm rentals_orm.db
 echo Creating database file...
-python3 create_database_orm.py rentals
+python3 create_database_orm.py rentals_orm
 echo Inserting data for 2021-01...
-python3 load_data_orm.py dane/historia_przejazdow_2021-01.csv rentals
+python3 load_data_orm.py dane/historia_przejazdow_2021-01.csv rentals_orm
 echo Inserting data for 2021-02...
-python3 load_data_orm.py dane/historia_przejazdow_2021-02.csv rentals
+python3 load_data_orm.py dane/historia_przejazdow_2021-02.csv rentals_orm
 echo Retrieving data from database...
 if [ $# = 1 ]; then
-	python3 get_data_orm.py rentals | less
+	python3 get_data_orm.py rentals_orm | less
 else
-	python3 get_data_orm.py rentals
+	python3 get_data_orm.py rentals_orm
 fi

@@ -1,4 +1,6 @@
 import sqlite3
+import peewee
+from tables_orm import *
 from abc import abstractmethod
 
 
@@ -14,6 +16,7 @@ class SQLiteLoader(DataLoader):
 
     def load_data(self):
         from pathlib import Path
+        self.ctx.ui.stationList.clear()
         path = Path(self.ctx.ui.databasePath.text())
         self.connection = sqlite3.connect(path)
         self.cursor = self.connection.cursor()
@@ -27,4 +30,18 @@ class SQLiteLoader(DataLoader):
 
 # tu dopisz
 class ORMLoader(DataLoader):
-    pass
+    def __init__(self, ctx):
+        self.ctx = ctx
+
+    def load_data(self):
+        from pathlib import Path
+        self.ctx.ui.stationList.clear()
+        path = Path(self.ctx.ui.databasePath.text())
+        db.init(path)
+        stations = sorted([station.stationName for station in Station.select()])
+        for station in stations:
+            self.ctx.ui.stationList.addItem(str(station))
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.connection is not None:
+            self.connection.close()

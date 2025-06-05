@@ -1,4 +1,4 @@
-from DataLoaders import SQLiteLoader
+from DataLoaders import SQLiteLoader, ORMLoader
 
 
 class FormatManager:
@@ -12,7 +12,7 @@ class FormatManager:
         self.current_format = self.ctx.ui.dialectBox.currentText()
         # tutaj nadpisz
         print(self.current_format)
-        self.loader = SQLiteLoader(self.ctx) if self.current_format == 'Sqlite' else None
+        self.loader = SQLiteLoader(self.ctx) if self.current_format == 'Sqlite' else ORMLoader(self.ctx)
 
     def load_data(self):
         self.loader.load_data()
