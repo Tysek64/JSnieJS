@@ -21,7 +21,6 @@
        <enum>Qt::Orientation::Vertical</enum>
       </property>
       <widget class="QWidget" name="layoutWidget">
-
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
          <widget class="QLabel" name="label">
@@ -143,6 +142,20 @@
           </widget>
          </item>
          <item>
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Most popular destination</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="popDest">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QLabel" name="label_8">
            <property name="text">
             <string>Example rentals</string>
@@ -156,7 +169,6 @@
            </property>
            <property name="layoutMode">
             <enum>QListView::LayoutMode::Batched</enum>
-
            </property>
           </widget>
          </item>

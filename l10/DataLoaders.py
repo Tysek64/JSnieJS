@@ -49,6 +49,20 @@ class SQLiteLoader(DataLoader):
         avg_time_end = self.cursor.fetchone()
         if avg_time_end != (None,):
             self.ctx.ui.avgTimeEnd.setText(str(round(avg_time_end[0])))
+
+        self.cursor.execute(f'''
+            SELECT COUNT(rental_id), BeginStations.station_name, EndStations.station_name 
+            FROM (Rentals RIGHT JOIN Stations AS BeginStations ON Rentals.rental_station = BeginStations.station_id) 
+            RIGHT JOIN Stations AS EndStations ON Rentals.return_station=EndStations.station_id 
+            WHERE BeginStations.station_name='{station_name}'
+            GROUP BY EndStations.station_name
+            ORDER BY COUNT(rental_id) DESC
+            LIMIT 1
+            ''')
+        popular_destination = self.cursor.fetchone()
+        if avg_time_end != (None,):
+            self.ctx.ui.popDest.setText(popular_destination[2])
+
         self.cursor.execute(f"SELECT COUNT(*) FROM ("
                             f"SELECT COUNT(bike_number) FROM "
                             f"(Rentals RIGHT JOIN Stations AS BeginStations "
@@ -111,9 +125,12 @@ class ORMLoader(DataLoader):
 
         query = len(Rental.select(Rental.bikeNumber).where((Rental.rentalStation == currentStation) | (Rental.returnStation == currentStation)).distinct())
         self.ctx.ui.diffBikes.setText(str(query))
+
+        query = Station.get(Station.stationID == Rental.select(Rental.rentalStation, Rental.returnStation, peewee.fn.Count(Rental.rentalID).alias('count')).where(Rental.rentalStation == currentStation).group_by(Rental.returnStation).order_by(peewee.fn.Count(Rental.rentalID))[-1].returnStation).stationName
+        self.ctx.ui.popDest.setText(query)
     
         results = Rental.select().where((Rental.rentalStation == currentStation) | (Rental.returnStation == currentStation))
 
-        for row in results:
+        for _, row in zip(range(15), results):
             buff = f"{row.rentalID}\t{row.bikeNumber}\t{row.startTime}\t{row.endTime}\t{Station.get(Station.stationID == row.rentalStation).stationName}\t{Station.get(Station.stationID == row.returnStation).stationName}"
             self.ctx.ui.rentalsList.addItem(buff)

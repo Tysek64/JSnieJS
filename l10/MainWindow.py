@@ -133,6 +133,17 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.diffBikes)
 
+        self.label_9 = QLabel(self.layoutWidget2)
+        self.label_9.setObjectName(u"label_9")
+
+        self.verticalLayout.addWidget(self.label_9)
+
+        self.popDest = QLineEdit(self.layoutWidget2)
+        self.popDest.setObjectName(u"popDest")
+        self.popDest.setReadOnly(True)
+
+        self.verticalLayout.addWidget(self.popDest)
+
         self.label_8 = QLabel(self.layoutWidget2)
         self.label_8.setObjectName(u"label_8")
 
@@ -177,6 +188,7 @@ class Ui_MainWindow(object):
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Average time as start", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"Average time at end", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Diffrent bikes", None))
+        self.label_9.setText(QCoreApplication.translate("MainWindow", u"Most popular destination", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"Example rentals", None))
     # retranslateUi
 
