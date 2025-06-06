@@ -1,4 +1,6 @@
 import sqlite3
+import peewee
+from tables_orm import *
 from abc import abstractmethod
 import datetime
 
@@ -19,7 +21,8 @@ class SQLiteLoader(DataLoader):
 
     def load_data(self):
         from pathlib import Path
-        path = Path(self.ctx.ui.databaseSelector.text())
+        self.ctx.ui.stationList.clear()
+        path = Path(self.ctx.ui.databasePath.text())
         self.connection = sqlite3.connect(path)
         self.cursor = self.connection.cursor()
         stations = self.cursor.execute('SELECT station_name FROM Stations ORDER BY station_name')
@@ -32,7 +35,7 @@ class SQLiteLoader(DataLoader):
         if self.cursor is None:
             return
 
-        self.ctx.ui.exampleRentals.clear()
+        self.ctx.ui.rentalsList.clear()
         #print('updating')
         self.cursor.execute(f"SELECT AVG(end_time - start_time) FROM Rentals RIGHT JOIN "
                             f"Stations ON Rentals.rental_station = Stations.station_id WHERE station_name='{station_name}'")
@@ -45,7 +48,7 @@ class SQLiteLoader(DataLoader):
                             f"Stations ON Rentals.return_station = Stations.station_id WHERE station_name='{station_name}'")
         avg_time_end = self.cursor.fetchone()
         if avg_time_end != (None,):
-            self.ctx.ui.avgEndTime.setText(str(round(avg_time_end[0])))
+            self.ctx.ui.avgTimeEnd.setText(str(round(avg_time_end[0])))
         self.cursor.execute(f"SELECT COUNT(*) FROM ("
                             f"SELECT COUNT(bike_number) FROM "
                             f"(Rentals RIGHT JOIN Stations AS BeginStations "
@@ -58,7 +61,7 @@ class SQLiteLoader(DataLoader):
         distinct_bikes = self.cursor.fetchone()
         if distinct_bikes != (None,):
             #print(distinct_bikes)
-            self.ctx.ui.differentBikes.setText(str(distinct_bikes[0]))
+            self.ctx.ui.diffBikes.setText(str(distinct_bikes[0]))
 
         self.cursor.execute(f"SELECT rental_id, bike_number, start_time, end_time, BeginStations.station_name, EndStations.station_name "
                             f"FROM (Rentals RIGHT JOIN Stations AS BeginStations ON Rentals.rental_station = BeginStations.station_id) "
@@ -69,7 +72,7 @@ class SQLiteLoader(DataLoader):
 
         for row in results:
             buff = f"{row[0]}\t{row[1]}\t{datetime.date.fromtimestamp(row[2])}\t{datetime.date.fromtimestamp(row[3])}\t{row[4]}\t{row[5]}"
-            self.ctx.ui.exampleRentals.addItem(buff)
+            self.ctx.ui.rentalsList.addItem(buff)
 
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -78,4 +81,39 @@ class SQLiteLoader(DataLoader):
 
 # tu dopisz
 class ORMLoader(DataLoader):
-    pass
+    def __init__(self, ctx):
+        self.ctx = ctx
+
+    def load_data(self):
+        from pathlib import Path
+        self.ctx.ui.stationList.clear()
+        path = Path(self.ctx.ui.databasePath.text())
+        db.init(path)
+        stations = sorted([station.stationName for station in Station.select()])
+        for station in stations:
+            self.ctx.ui.stationList.addItem(str(station))
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.connection is not None:
+            self.connection.close()
+
+    def update_stats(self, station_name):
+        self.ctx.ui.rentalsList.clear()
+        currentStation = Station.get(Station.stationName == station_name).stationID
+
+        query = Rental.select().where(Rental.rentalStation == currentStation)
+        avg = sum([row.endTime - row.startTime for row in query], datetime.timedelta(0)) / len(query)
+        self.ctx.ui.avgTimeStart.setText(str(avg))
+
+        query = Rental.select().where(Rental.returnStation == currentStation)
+        avg = sum([row.endTime - row.startTime for row in query], datetime.timedelta(0)) / len(query)
+        self.ctx.ui.avgTimeEnd.setText(str(avg))
+
+        query = len(Rental.select(Rental.bikeNumber).where((Rental.rentalStation == currentStation) | (Rental.returnStation == currentStation)).distinct())
+        self.ctx.ui.diffBikes.setText(str(query))
+    
+        results = Rental.select().where((Rental.rentalStation == currentStation) | (Rental.returnStation == currentStation))
+
+        for row in results:
+            buff = f"{row.rentalID}\t{row.bikeNumber}\t{row.startTime}\t{row.endTime}\t{Station.get(Station.stationID == row.rentalStation).stationName}\t{Station.get(Station.stationID == row.returnStation).stationName}"
+            self.ctx.ui.rentalsList.addItem(buff)

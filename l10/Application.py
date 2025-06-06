@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         self.formatManager = FormatManager(self)
         self.positionManager = PositionManager(self)
         self.ui.stationList.currentRowChanged.connect(self.positionManager.update_stats)
-        self.ui.dialectSelector.currentTextChanged.connect(self.formatManager.update_format)
+        self.ui.dialectBox.currentTextChanged.connect(self.formatManager.update_format)
         self.ui.loadButton.clicked.connect(self.formatManager.load_data)
 
 
