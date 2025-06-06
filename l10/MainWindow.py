@@ -183,6 +183,9 @@ class Ui_MainWindow(object):
         self.dialectBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Peewee", None))
 
         self.loadButton.setText(QCoreApplication.translate("MainWindow", u"Load", None))
+#if QT_CONFIG(shortcut)
+        self.loadButton.setShortcut(QCoreApplication.translate("MainWindow", u"Return", None))
+#endif // QT_CONFIG(shortcut)
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Stations", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Overview", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Average time as start", None))

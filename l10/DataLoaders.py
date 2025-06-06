@@ -41,14 +41,14 @@ class SQLiteLoader(DataLoader):
                             f"Stations ON Rentals.rental_station = Stations.station_id WHERE station_name='{station_name}'")
         avg_time_begin = self.cursor.fetchone()
         if avg_time_begin != (None,):
-            self.ctx.ui.avgTimeStart.setText(str(round(avg_time_begin[0])))
+            self.ctx.ui.avgTimeStart.setText(str(datetime.timedelta(seconds=round(avg_time_begin[0]))))
 
         self.cursor.execute(
             f"SELECT AVG(end_time - start_time) FROM Rentals RIGHT JOIN "
                             f"Stations ON Rentals.return_station = Stations.station_id WHERE station_name='{station_name}'")
         avg_time_end = self.cursor.fetchone()
         if avg_time_end != (None,):
-            self.ctx.ui.avgTimeEnd.setText(str(round(avg_time_end[0])))
+            self.ctx.ui.avgTimeEnd.setText(str(datetime.timedelta(seconds=round(avg_time_end[0]))))
 
         self.cursor.execute(f'''
             SELECT COUNT(rental_id), BeginStations.station_name, EndStations.station_name 
