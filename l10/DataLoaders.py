@@ -40,14 +40,14 @@ class SQLiteLoader(DataLoader):
         self.cursor.execute(f"SELECT AVG(end_time - start_time) FROM Rentals RIGHT JOIN "
                             f"Stations ON Rentals.rental_station = Stations.station_id WHERE station_name='{station_name}'")
         avg_time_begin = self.cursor.fetchone()
-        if avg_time_begin != (None,):
+        if avg_time_begin is not None:
             self.ctx.ui.avgTimeStart.setText(str(datetime.timedelta(seconds=round(avg_time_begin[0]))))
 
         self.cursor.execute(
             f"SELECT AVG(end_time - start_time) FROM Rentals RIGHT JOIN "
                             f"Stations ON Rentals.return_station = Stations.station_id WHERE station_name='{station_name}'")
         avg_time_end = self.cursor.fetchone()
-        if avg_time_end != (None,):
+        if avg_time_end is not None:
             self.ctx.ui.avgTimeEnd.setText(str(datetime.timedelta(seconds=round(avg_time_end[0]))))
 
         self.cursor.execute(f'''
@@ -60,7 +60,7 @@ class SQLiteLoader(DataLoader):
             LIMIT 1
             ''')
         popular_destination = self.cursor.fetchone()
-        if avg_time_end != (None,):
+        if popular_destination is not None:
             self.ctx.ui.popDest.setText(popular_destination[2])
 
         self.cursor.execute(f"SELECT COUNT(*) FROM ("
@@ -73,13 +73,13 @@ class SQLiteLoader(DataLoader):
                             f"OR BeginStations.station_name='{station_name}' "
                             f"GROUP BY bike_number)")
         distinct_bikes = self.cursor.fetchone()
-        if distinct_bikes != (None,):
+        if distinct_bikes is not None:
             #print(distinct_bikes)
             self.ctx.ui.diffBikes.setText(str(distinct_bikes[0]))
 
         self.cursor.execute(f"SELECT rental_id, bike_number, start_time, end_time, BeginStations.station_name, EndStations.station_name "
-                            f"FROM (Rentals RIGHT JOIN Stations AS BeginStations ON Rentals.rental_station = BeginStations.station_id) "
-                            f"RIGHT JOIN Stations AS EndStations ON Rentals.return_station=EndStations.station_id "
+                            f"FROM (Rentals INNER JOIN Stations AS BeginStations ON Rentals.rental_station = BeginStations.station_id) "
+                            f"INNER JOIN Stations AS EndStations ON Rentals.return_station=EndStations.station_id "
                             f"WHERE EndStations.station_name='{station_name}' OR BeginStations.station_name='{station_name}' "
                             f"LIMIT 15")
         results = self.cursor.fetchall()
@@ -116,18 +116,22 @@ class ORMLoader(DataLoader):
         currentStation = Station.get(Station.stationName == station_name).stationID
 
         query = Rental.select().where(Rental.rentalStation == currentStation)
-        avg = sum([row.endTime - row.startTime for row in query], datetime.timedelta(0)) / len(query)
+        avg = datetime.timedelta(0) if len(query) == 0 else sum([row.endTime - row.startTime for row in query], datetime.timedelta(0)) / len(query)
         self.ctx.ui.avgTimeStart.setText(str(avg))
 
         query = Rental.select().where(Rental.returnStation == currentStation)
-        avg = sum([row.endTime - row.startTime for row in query], datetime.timedelta(0)) / len(query)
+        avg = datetime.timedelta(0) if len(query) == 0 else sum([row.endTime - row.startTime for row in query], datetime.timedelta(0)) / len(query)
         self.ctx.ui.avgTimeEnd.setText(str(avg))
 
         query = len(Rental.select(Rental.bikeNumber).where((Rental.rentalStation == currentStation) | (Rental.returnStation == currentStation)).distinct())
         self.ctx.ui.diffBikes.setText(str(query))
 
-        query = Station.get(Station.stationID == Rental.select(Rental.rentalStation, Rental.returnStation, peewee.fn.Count(Rental.rentalID).alias('count')).where(Rental.rentalStation == currentStation).group_by(Rental.returnStation).order_by(peewee.fn.Count(Rental.rentalID))[-1].returnStation).stationName
-        self.ctx.ui.popDest.setText(query)
+        query = Rental.select(Rental.rentalStation, Rental.returnStation, peewee.fn.Count(Rental.rentalID).alias('count')).where(Rental.rentalStation == currentStation).group_by(Rental.returnStation).order_by(peewee.fn.Count(Rental.rentalID))
+        if len(query) == 0:
+            self.ctx.ui.popDest.setText('-')
+        else:
+            query = Station.get_or_none(Station.stationID == query[-1].returnStation).stationName
+            self.ctx.ui.popDest.setText(query)
     
         results = Rental.select().where((Rental.rentalStation == currentStation) | (Rental.returnStation == currentStation))
 

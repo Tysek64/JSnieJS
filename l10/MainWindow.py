@@ -25,6 +25,8 @@ class Ui_MainWindow(object):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(800, 600)
+        icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DialogPassword))
+        MainWindow.setWindowIcon(icon)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout_2 = QGridLayout(self.centralwidget)
@@ -176,7 +178,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Bazury", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Database path", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Dialect", None))
         self.dialectBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Sqlite", None))
