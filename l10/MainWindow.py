@@ -52,7 +52,7 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.label_3, 0, 1, 1, 1)
 
-        self.databasePath = QLineEdit(self.layoutWidget
+        self.databasePath = QLineEdit(self.layoutWidget)
         self.databasePath.setObjectName(u"databasePath")
 
         self.gridLayout.addWidget(self.databasePath, 1, 0, 1, 1)
@@ -79,13 +79,11 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.label_2 = QLabel(self.layoutWidget1)
-
         self.label_2.setObjectName(u"label_2")
 
         self.verticalLayout_2.addWidget(self.label_2)
 
         self.stationList = QListWidget(self.layoutWidget1)
-
         self.stationList.setObjectName(u"stationList")
         self.stationList.setProperty(u"isWrapping", True)
 
@@ -98,58 +96,49 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.label_4 = QLabel(self.layoutWidget2)
-
         self.label_4.setObjectName(u"label_4")
 
         self.verticalLayout.addWidget(self.label_4)
 
         self.label_5 = QLabel(self.layoutWidget2)
-
         self.label_5.setObjectName(u"label_5")
 
         self.verticalLayout.addWidget(self.label_5)
 
         self.avgTimeStart = QLineEdit(self.layoutWidget2)
-
         self.avgTimeStart.setObjectName(u"avgTimeStart")
         self.avgTimeStart.setReadOnly(True)
 
         self.verticalLayout.addWidget(self.avgTimeStart)
 
         self.label_6 = QLabel(self.layoutWidget2)
-
         self.label_6.setObjectName(u"label_6")
 
         self.verticalLayout.addWidget(self.label_6)
 
         self.avgTimeEnd = QLineEdit(self.layoutWidget2)
-
         self.avgTimeEnd.setObjectName(u"avgTimeEnd")
         self.avgTimeEnd.setReadOnly(True)
 
         self.verticalLayout.addWidget(self.avgTimeEnd)
 
         self.label_7 = QLabel(self.layoutWidget2)
-
         self.label_7.setObjectName(u"label_7")
 
         self.verticalLayout.addWidget(self.label_7)
 
         self.diffBikes = QLineEdit(self.layoutWidget2)
-
         self.diffBikes.setObjectName(u"diffBikes")
         self.diffBikes.setReadOnly(True)
 
         self.verticalLayout.addWidget(self.diffBikes)
 
         self.label_8 = QLabel(self.layoutWidget2)
-
         self.label_8.setObjectName(u"label_8")
 
         self.verticalLayout.addWidget(self.label_8)
 
         self.rentalsList = QListWidget(self.layoutWidget2)
-
         self.rentalsList.setObjectName(u"rentalsList")
         self.rentalsList.setProperty(u"isWrapping", False)
         self.rentalsList.setLayoutMode(QListView.LayoutMode.Batched)
