@@ -24,31 +24,13 @@
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="7" column="1">
-      <widget class="QLabel" name="label_7">
+     <property name="sizeConstraint">
+      <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>Diffrent bikes</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Overview</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="avgTimeStart">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLineEdit" name="avgTimeEnd">
-       <property name="readOnly">
-        <bool>true</bool>
+        <string>Database path</string>
        </property>
       </widget>
      </item>
@@ -59,53 +41,11 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Average time as start</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3">
-      <widget class="QPushButton" name="loadButton">
-       <property name="text">
-        <string>Load</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="1">
-      <widget class="QLabel" name="label_8">
-       <property name="text">
-        <string>Example rentals</string>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="0" colspan="2">
-      <widget class="QLineEdit" name="databasePath"/>
-     </item>
-     <item row="8" column="1">
-      <widget class="QLineEdit" name="diffBikes">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>Average time at end</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Database path</string>
-       </property>
-      </widget>
+      <widget class="QLineEdit" name="databaseSelector"/>
      </item>
      <item row="1" column="2">
-      <widget class="QComboBox" name="dialectBox">
+      <widget class="QComboBox" name="dialectSelector">
        <item>
         <property name="text">
          <string>Sqlite</string>
@@ -118,10 +58,73 @@
        </item>
       </widget>
      </item>
+     <item row="1" column="3">
+      <widget class="QPushButton" name="loadButton">
+       <property name="text">
+        <string>Load</string>
+       </property>
+      </widget>
+     </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Stations</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Overview</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Average time as start</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="avgTimeStart">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Average time at end</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="avgEndTime">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Diffrent bikes</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QLineEdit" name="differentBikes">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="1">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Example rentals</string>
        </property>
       </widget>
      </item>
@@ -133,9 +136,18 @@
       </widget>
      </item>
      <item row="10" column="1" colspan="3">
-      <widget class="QListWidget" name="rentalsList">
+      <widget class="QListWidget" name="exampleRentals">
+       <property name="sizeAdjustPolicy">
+        <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
+       </property>
        <property name="isWrapping" stdset="0">
         <bool>true</bool>
+       </property>
+       <property name="uniformItemSizes">
+        <bool>false</bool>
+       </property>
+       <property name="itemAlignment">
+        <set>Qt::AlignmentFlag::AlignLeading</set>
        </property>
       </widget>
      </item>

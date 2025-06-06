@@ -9,9 +9,8 @@ class FormatManager:
 
     def update_format(self):
         self.ctx.ui.stationList.clear()
-        self.current_format = self.ctx.ui.dialectBox.currentText()
+        self.current_format = self.ctx.ui.dialectSelector.currentText()
         # tutaj nadpisz
-        print(self.current_format)
         self.loader = SQLiteLoader(self.ctx) if self.current_format == 'Sqlite' else None
 
     def load_data(self):

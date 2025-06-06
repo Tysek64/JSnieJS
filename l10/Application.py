@@ -3,6 +3,7 @@ import sys
 from MainWindow import Ui_MainWindow
 from DataLoaders import SQLiteLoader
 from FormatManager import FormatManager
+from PositionManager import PositionManager
 
 
 class MainWindow(QMainWindow):
@@ -10,11 +11,13 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.attach_listeners()
+        self.setup_listeners()
 
-    def attach_listeners(self):
+    def setup_listeners(self):
         self.formatManager = FormatManager(self)
-        self.ui.dialectBox.currentTextChanged.connect(self.formatManager.update_format)
+        self.positionManager = PositionManager(self)
+        self.ui.stationList.currentRowChanged.connect(self.positionManager.update_stats)
+        self.ui.dialectSelector.currentTextChanged.connect(self.formatManager.update_format)
         self.ui.loadButton.clicked.connect(self.formatManager.load_data)
 
 
